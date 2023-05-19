@@ -26,6 +26,8 @@ import sys
 
 from passagerole import __version__
 
+from . import lib
+
 __author__ = "Taylor Monacelli"
 __copyright__ = "Taylor Monacelli"
 __license__ = "MIT"
@@ -78,7 +80,7 @@ def parse_args(args):
         action="version",
         version=f"passagerole {__version__}",
     )
-    parser.add_argument(dest="n", help="n-th Fibonacci number", type=int, metavar="INT")
+    # parser.add_argument(dest="n", help="n-th Fibonacci", type=int, metavar="INT")
     parser.add_argument(
         "-v",
         "--verbose",
@@ -123,7 +125,8 @@ def main(args):
     args = parse_args(args)
     setup_logging(args.loglevel)
     _logger.debug("Starting crazy calculations...")
-    print(f"The {args.n}-th Fibonacci number is {fib(args.n)}")
+    lib.main()
+    # print(f"The {args.n}-th Fibonacci number is {fib(args.n)}")
     _logger.info("Script ends here")
 
 
