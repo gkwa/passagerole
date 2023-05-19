@@ -23,7 +23,7 @@ def create_user_data_script(fname: str) -> None:
 
 
 def gen_user_data() -> str:
-    TEMPLATE_FILE = "bash_userdata.sh.j2"
+    TEMPLATE_FILE = "userdata_bash_ssh_keys.sh.j2"
 
     keys_data_path = (
         authorized_keys_path if authorized_keys_path.exists() else dummy_data_path
