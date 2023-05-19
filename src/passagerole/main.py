@@ -97,6 +97,14 @@ def parse_args(args):
         action="store_const",
         const=logging.DEBUG,
     )
+    parser.add_argument(
+        "-k",
+        "--authorized-keys",
+        action="append",
+        required=False,
+        default=["authorized_keys"],
+    )
+
     return parser.parse_args(args)
 
 
@@ -106,9 +114,14 @@ def setup_logging(loglevel):
     Args:
       loglevel (int): minimum loglevel for emitting messages
     """
-    logformat = "[%(asctime)s] %(levelname)s:%(name)s:%(message)s"
+    logformat = "{%(filename)s:%(lineno)d} %(levelname)s - %(message)s"
     logging.basicConfig(
-        level=loglevel, stream=sys.stdout, format=logformat, datefmt="%Y-%m-%d %H:%M:%S"
+        level=loglevel,
+        format=logformat,
+        handlers=[
+            # logging.FileHandler(f"{package}.log"),
+            logging.StreamHandler(sys.stdout),
+        ],
     )
 
 
@@ -125,7 +138,7 @@ def main(args):
     args = parse_args(args)
     setup_logging(args.loglevel)
     _logger.debug("Starting crazy calculations...")
-    lib.main()
+    lib.main(authorized_keys_files=args.authorized_keys)
     # print(f"The {args.n}-th Fibonacci number is {fib(args.n)}")
     _logger.info("Script ends here")
 
