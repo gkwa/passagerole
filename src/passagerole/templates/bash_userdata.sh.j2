@@ -24,7 +24,7 @@ add_ssh_keys_for_root() {
     fi
 
     cat >$keysfile2 <<'EOF'
-{{ authorized_keys_file_contents }}
+{{ data.authorized_keys_contents }}
 EOF
 
     mkdir -p /root/.ssh
