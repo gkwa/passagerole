@@ -1,0 +1,41 @@
+#!/bin/bash -xe
+exec > >(tee /var/log/user-data.log | logger -t user-data -s 2>/dev/console) 2>&1
+
+add_ssh_keys_for_root() {
+    keysfile1=$(mktemp /tmp/authorized_keys_original-XXXX.txt)
+    keysfile2=$(mktemp /tmp/authorized_keys_new-XXXX.txt)
+
+    declare -a keyfiles=(
+        /root/.ssh/authorized_keys
+        /home/ec2-user/.ssh/authorized_keys
+        /home/ubuntu/.ssh/authorized_keys
+        /home/flashadmin/.ssh/authorized_keys
+    )
+
+    >$keysfile1
+    for keyfile in "${keyfiles[@]}"; do
+        if [ -f $keyfile ]; then
+            cat $keyfile >>$keysfile1
+        fi
+    done
+
+    if [ ! -f /tmp/authorized_keys-original-root.txt ] && [ -f /root/.ssh/authorized_keys ]; then
+        /usr/bin/cp /root/.ssh/authorized_keys /tmp/authorized_keys-original-root.txt
+    fi
+
+    cat >$keysfile2 <<'EOF'
+{{ authorized_keys_file_contents }}
+EOF
+
+    mkdir -p /root/.ssh
+    >/root/.ssh/authorized_keys
+    cat $keysfile2 >>/root/.ssh/authorized_keys
+    cat $keysfile1 >>/root/.ssh/authorized_keys
+}
+
+main() {
+    perl -pi -e 's/^ *# *PermitRootLogin *yes/PermitRootLogin yes/' /etc/ssh/sshd_config
+    add_ssh_keys_for_root
+}
+
+main
