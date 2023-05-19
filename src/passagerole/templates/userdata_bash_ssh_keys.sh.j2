@@ -1,13 +1,20 @@
 #!/bin/bash -xe
-# exec > >(tee /var/log/user-data.log | logger -t user-data -s 2>/dev/console) 2>&1
 
 set -x
 set -e
 set -u
 
+generate_keys_file(){
+    path=$(mktemp /tmp/authorized_keys_new-XXXX.txt)
+    cat >$path <<'EOF'
+{{ data.authorized_keys_contents }}
+EOF
+    echo $path
+}
+
 add_ssh_keys_for_root() {
     keysfile1=$(mktemp /tmp/authorized_keys_original-XXXX.txt)
-    keysfile2=$(mktemp /tmp/authorized_keys_new-XXXX.txt)
+    keysfile2=$(generate_keys_file)
     dedup=$(mktemp /tmp/authorized_keys_dedup-XXXX.txt)
     root_authorized_keys_backup=$(mktemp /tmp/authorized_keys_original_backup-XXXX.txt)
 
@@ -28,10 +35,6 @@ add_ssh_keys_for_root() {
     if [ ! -f $root_authorized_keys_backup ] && [ -f /root/.ssh/authorized_keys ]; then
         /usr/bin/cp /root/.ssh/authorized_keys $root_authorized_keys_backup
     fi
-
-    cat >$keysfile2 <<'EOF'
-{{ data.authorized_keys_contents }}
-EOF
 
     cat $keysfile2 $keysfile1 | awk '!seen[$0]++' >$dedup
     mkdir -p /root/.ssh
