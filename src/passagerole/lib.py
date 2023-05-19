@@ -11,7 +11,6 @@ package = __name__.split(".")[0]
 templates_dir = pathlib.Path(pkg_resources.resource_filename(package, "templates"))
 
 dummy_data_path = templates_dir / "authorized_keys_dummy_data"
-authorized_keys_path = pathlib.Path("authorized_keys")
 
 loader = jinja2.FileSystemLoader(searchpath=templates_dir)
 env = jinja2.Environment(loader=loader, keep_trailing_newline=True)
