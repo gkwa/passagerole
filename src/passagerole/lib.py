@@ -1,7 +1,6 @@
 import io
 import logging
 import pathlib
-import sys
 
 import jinja2
 import pkg_resources
@@ -33,6 +32,7 @@ def aggregate_keys_files_to_str(paths: list[pathlib.Path]) -> str:
     vfile = io.StringIO()
 
     for path in paths:
+        path = pathlib.Path(path)
         vfile.write(path.read_text())
         vfile.write("\n")
 
@@ -50,17 +50,16 @@ def gen_user_data(aggregated_authoirzed_keys: str) -> str:
     return outputText
 
 
+def warn_for_dummy_data(contents: str) -> None:
+    msg = "update your authorized_keys file since you're using dummy data there now"
+    keys = ["AAAAC3NzaC1lZDI1NTE5AAAAIGhjeFtKwX", "AAAAB3NzaC1yc2EAAAADAQABAAABAQC7Y"]
+    for key in keys:
+        if key in contents:
+            _logger.warn(msg)
+            break
+
+
 def main(authorized_keys_files):
-    paths = {pathlib.Path(x) for x in authorized_keys_files}
-    paths_copy = paths.copy()
-    for path in paths:
-        if not path_exists(path):
-            paths_copy.remove(path)
-
-    if paths != paths_copy:
-        for path in paths_copy - paths:
-            _logger.critical(f"can't find path {path}")
-        sys.exit(1)
-
-    result = aggregate_keys_files_to_str(paths_copy)
+    result = aggregate_keys_files_to_str(authorized_keys_files)
     create_user_data_script("user_data.sh", contents=result)
+    warn_for_dummy_data(result)
